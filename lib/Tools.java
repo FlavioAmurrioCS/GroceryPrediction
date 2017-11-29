@@ -204,7 +204,7 @@ public class Tools {
         try {
 
             FileWriter fw = new FileWriter(filename, true);
-            fw.write("\n" + text);//appends the string to the file
+            fw.write(text + "\n");//appends the string to the file
             fw.close();
         } catch (Exception e) {
 

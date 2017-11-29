@@ -13,9 +13,13 @@ public class Miner {
     public static final String SAMPLE_FILE = OUT_FOLDER + "sample.txt";
     public static final String SAMPLE_TRAIN = OUT_FOLDER + "sampleTrain.txt";
     public static final String SAMPLE_TEST = OUT_FOLDER + "sampleTest.txt";
+    public static final int TRAIN_SIZE = 125497041;
 
     public static void main(String[] args) {
-        csvSplitter(TRAIN_FILE, STORE_TRAIN, "store_train_", "store_nbr");
+        // csvSplitter(TRAIN_FILE, STORE_TRAIN, "store_train_", "store_nbr");
+
+        csvExtractor(TRAIN_FILE, "out.csv", "store_nbr", "1", TRAIN_SIZE);
+        crossValidationSplit(TRAIN_FILE, SAMPLE_TRAIN, SAMPLE_TEST, .8);
     }
 
     public static void sampleData(String src, String dest, int beginIndex, int endIndex) {
@@ -84,11 +88,47 @@ public class Miner {
                 sb = new StringBuilder();
                 current = arr[index];
             }
-            sb.append(str + "\n");
+            if (sc.hasNext())
+                sb.append(str + "\n");
+            else
+                sb.append(str);
             lineNum++;
             pb.update(lineNum);
         }
         Tools.appendFile(folder + outname + current + ".csv", sb.toString());
         timer.time();
+    }
+
+    public static void csvExtractor(String src, String dest, String attName, String val, int pbSize) {
+        Tools.tittleMaker("CSV Extractor");
+        Timer timer = new Timer();
+        Scanner sc = Tools.fileReader(src);
+        PrintWriter pw = Tools.fileWriter(dest);
+        ProgressBar pb = new ProgressBar(pbSize);
+        String str = sc.nextLine();
+        String[] arr = str.split(",");
+        int col = -1;
+        int count = 0;
+        for (int i = 0; i < arr.length; i++) {
+            if (attName.equals(arr[i])) {
+                col = i;
+                break;
+            }
+        }
+        if (col == -1) {
+            System.out.println("Column Not Found!!!");
+            System.exit(1);
+        }
+        pw.println(str);
+        while (sc.hasNextLine()) {
+            str = sc.nextLine();
+            arr = str.split(",");
+            if (val.equals(arr[col]))
+                pw.println(str);
+            if (pbSize > 0)
+                pb.update(count++);
+        }
+        sc.close();
+        pw.close();
     }
 }
