@@ -9,6 +9,10 @@ public class TransDate {
     // 0,2013-01-01,25,103665,7.0,
 
     int id;
+    Date date;
+    double oilPrice;
+    // Holiday holiday;
+    List<Transaction> tList;
     
 
 }

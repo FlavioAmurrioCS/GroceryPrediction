@@ -129,6 +129,14 @@ public class Tools {
         pw.close();
     }
 
+    public static <T> String listToString(List<T> list) {
+        StringBuilder sb = new StringBuilder();
+        for (T obj : list) {
+            sb.append(obj.toString() + "\n");
+        }
+        return sb.toString();
+    }
+
     public static int lineCount(String filename) {
         Scanner sc = fileReader(filename);
         int count = 0;

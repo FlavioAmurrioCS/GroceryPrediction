@@ -18,8 +18,23 @@ public class Miner {
     public static void main(String[] args) {
         // csvSplitter(TRAIN_FILE, STORE_TRAIN, "store_train_", "store_nbr");
 
-        csvExtractor(TRAIN_FILE, "out.csv", "store_nbr", "1", TRAIN_SIZE);
-        crossValidationSplit(TRAIN_FILE, SAMPLE_TRAIN, SAMPLE_TEST, .8);
+        // csvExtractor(TRAIN_FILE, "out.csv", "store_nbr", "1", TRAIN_SIZE);
+        // crossValidationSplit(TRAIN_FILE, SAMPLE_TRAIN, SAMPLE_TEST, .8);
+
+        Timer timer = new Timer();
+        ArrayList<Transaction> tList = new ArrayList<>();
+
+        Scanner sc = Tools.fileReader(STORE_TRAIN + "store_1.csv");
+        sc.nextLine();
+        while (sc.hasNextLine()) {
+            tList.add(new Transaction(sc.nextLine()));
+        }
+
+        timer.time();
+        Tools.slow(10000000);
+
+        // System.out.println(Tools.listToString(tList));
+
     }
 
     public static void sampleData(String src, String dest, int beginIndex, int endIndex) {
