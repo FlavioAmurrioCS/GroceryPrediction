@@ -10,6 +10,8 @@ public class Miner {
     public static final String OUT_FOLDER = "./out/";
     public static final String STORE_TRAIN = "./storeTrain/";
     public static final String TRAIN_FILE = RES_FOLDER + "train.csv";
+    public static final String TEST_FILE = RES_FOLDER + "test.csv";
+
     public static final String SAMPLE_FILE = OUT_FOLDER + "sample.txt";
     public static final String SAMPLE_TRAIN = OUT_FOLDER + "sampleTrain.txt";
     public static final String SAMPLE_TEST = OUT_FOLDER + "sampleTest.txt";
