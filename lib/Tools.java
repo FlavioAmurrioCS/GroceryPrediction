@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.io.File;
 import java.util.Random;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -148,6 +149,14 @@ public class Tools {
         return count;
     }
 
+    public static <V> ArrayList<Pair<V>> mapToPairList(HashMap<Integer, V> map) {
+        ArrayList<Pair<V>> ret = new ArrayList<>();
+        for (Integer key : map.keySet())
+            ret.add(new Pair<V>(key, map.get(key)));
+        Collections.sort(ret);
+        return ret;
+    }
+
     // public static ArrayList<String> fileToList(String filename) {
     //     Scanner sc = fileOpener(filename);
     //     ArrayList<String> arrList = new ArrayList<>();
@@ -210,12 +219,10 @@ public class Tools {
 
     public static void appendFile(String filename, String text) {
         try {
-
             FileWriter fw = new FileWriter(filename, true);
             fw.write(text + "\n");//appends the string to the file
             fw.close();
         } catch (Exception e) {
-
         }
     }
 
