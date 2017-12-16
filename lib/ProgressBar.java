@@ -4,11 +4,17 @@ public class ProgressBar {
     private long unit;
     private long lastPrint = 0;
     private char[] bar = "..................................................".toCharArray();
+    private long step = 0;
 
     public ProgressBar(long size) {
         this.size = size;
         this.unit = this.size / 100;
         this.startTime = System.currentTimeMillis();
+    }
+
+    public ProgressBar(long size, String name) {
+        this(size);
+        System.out.println(name);
     }
 
     public void update(long i) {
@@ -20,8 +26,15 @@ public class ProgressBar {
             System.out.print("\r" + barMaker(perc) + " " + timeToString(remainingTime) + "      ");
             lastPrint = perc;
         }
-        if (i == this.size - 1)
+        if (i == this.size - 1) {
             System.out.println();
+            System.out.println(timeToString(System.currentTimeMillis() - startTime));
+        }
+    }
+
+    public void step() {
+        this.step++;
+        update(this.step);
     }
 
     private long remainingTime(long perc) {

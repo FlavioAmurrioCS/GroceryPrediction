@@ -17,7 +17,8 @@ public class Pair<V> implements Comparable<Pair<V>> {
     }
 
     public String toString() {
-        return this.index + ": " + item.toString();
+        // return this.index + ": " + item.toString();
+        return this.index + "," + item.toString();
     }
 
 }

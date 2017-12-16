@@ -9,9 +9,9 @@ import java.util.Scanner;
  */
 public class BigDataLineReg {
 
-    public static HashMap<String, BigDataLineReg> regMap = new HashMap<>();
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     public static DecimalFormat df = new DecimalFormat("##.00");
+    public static HashMap<String, BigDataLineReg> regMap = new HashMap<>();
     public static PairTracker<Double> pairTracker = new PairTracker<>();
 
     double size = 0;
@@ -24,17 +24,18 @@ public class BigDataLineReg {
     double slope;
     double inter;
 
+    @SuppressWarnings("deprecation")
     public static void analyzeLine(String str) {
         String[] arr = str.split(",");
-        String store_item = "S: " + arr[2] + "\tI: " + arr[3];
         double unit_sales = Double.parseDouble(arr[4]);
-        Date date;
+        Date date = new Date();
         try {
             date = dateFormat.parse(arr[1]);
         } catch (Exception e) {
             return;
         }
-        getBigDataLineReg(store_item).inputXY(date, unit_sales);
+        String key = "W:" + date.getDay() + "\t S: " + arr[2] + "\tI: " + arr[3];
+        getBigDataLineReg(key).inputXY(date, unit_sales);
     }
 
     public static synchronized BigDataLineReg getBigDataLineReg(String key) {
@@ -50,14 +51,19 @@ public class BigDataLineReg {
         double x = dt.getTime();
         this.xSum += x;
         this.ySum += y;
-        this.xSqSum = (x * x);
-        this.xySum = (x * y);
+        this.xSqSum += (x * x);
+        this.xySum += (x * y);
+        this.size++;
     }
 
     public double getY(double xVal) {
-        // if (!this.finalize)
-        //     calculateLine();
+        if (size == 0)
+            return 0;
+        if (size < 4)
+            return ySum / size;
         double ans = (xVal * this.slope) + this.inter;
+        if (ans < 0)
+            return 0;
         return this.whole ? (double) Math.round(ans) : ((double) Math.round(ans * 100) / 100);
     }
 
@@ -66,7 +72,6 @@ public class BigDataLineReg {
         double bottom = (size * xSqSum) - (xSum * xSum);
         this.inter = ((ySum * xSqSum) - (xSum * xySum)) / (bottom);
         this.slope = ((size * xySum) - (xSum * ySum)) / (bottom);
-        // this.finalize = true;
     }
 
     public static void main(String[] args) {
@@ -78,32 +83,27 @@ public class BigDataLineReg {
     }
 
     public static void readFile() {
-        Timer timer = new Timer("Training");
-        ProgressBar pb = new ProgressBar(125497041);
-        int lineNum = 0;
+        ProgressBar pb = new ProgressBar(125497041, "Training");
         Scanner sc = Tools.fileReader(Miner.TRAIN_FILE);
         sc.nextLine();
         while (sc.hasNextLine()) {
             analyzeLine(sc.nextLine());
-            pb.update(lineNum++);
+            pb.step();
         }
         sc.close();
-        timer.time();
     }
 
     public static void calculateAllLines() {
-        Timer timer = new Timer("Calculate All Lines");
-        ProgressBar pb = new ProgressBar(regMap.size());
-        int lineNum = 0;
+        ProgressBar pb = new ProgressBar(regMap.size(), "Calculate All Lines");
         for (BigDataLineReg big : regMap.values()) {
             big.calculateLine();
-            pb.update(lineNum);
+            pb.step();
         }
-        timer.time();
     }
 
+    @SuppressWarnings("deprecation")
     public static void predict() {
-        Timer timer = new Timer("Predict");
+        ProgressBar pb = new ProgressBar(3370464, "Prediction");
         Scanner sc = Tools.fileReader(Miner.TEST_FILE);
         sc.nextLine();
         while (sc.hasNextLine()) {
@@ -112,18 +112,20 @@ public class BigDataLineReg {
                 @Override
                 public void run() {
                     String[] arr = str.split(",");
-                    String key = "S: " + arr[2] + "\tI: " + arr[3];
                     long x = 0;
+                    Date date = new Date();
                     try {
-                        x = dateFormat.parse(arr[1]).getTime();
+                        date = dateFormat.parse(arr[1]);
+                        x = date.getTime();
                     } catch (Exception e) {
                     }
+                    String key = "W:" + date.getDay() + "\t S: " + arr[2] + "\tI: " + arr[3];
                     BigDataLineReg big = getBigDataLineReg(key);
                     pairTracker.add(Integer.parseInt(arr[0]), big.getY(x));
                 }
             }.run();
+            pb.step();
         }
         pairTracker.toFile("output.csv");
-        timer.time();
     }
 }

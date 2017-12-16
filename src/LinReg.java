@@ -32,8 +32,8 @@ public class LinReg {
             double y = salesMap.get(dt);
             xSum += x;
             ySum += y;
-            xSqSum = (x * x);
-            xySum = (x * y);
+            xSqSum += (x * x);
+            xySum += (x * y);
         }
         double bottom = (size * xSqSum) - (xSum * xSum);
         this.inter = ((ySum * xSqSum) - (xSum * xySum)) / (bottom);
