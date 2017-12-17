@@ -11,7 +11,7 @@ public class RidgeReg implements Regression {
 
     }
 
-    public double predictY() {
+    public double predictY(double x) {
         return 0;
     }
 

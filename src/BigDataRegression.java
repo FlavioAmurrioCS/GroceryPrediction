@@ -7,88 +7,28 @@ import java.util.Map;
 import java.util.Scanner;
 
 /**
- * BigDataLineReg
+ * BigDataRegression
  */
-public class BigDataLineReg {
+public class BigDataRegression {
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     public static DecimalFormat df = new DecimalFormat("##.00");
     public static HashMap<String, Regression> regMap = new HashMap<>();
     public static PairTracker<Double> pairTracker = new PairTracker<>();
-    public static HashMap<Integer, Integer> sizeTracker = new HashMap<>();
+    // public static HashMap<Integer, Integer> sizeTracker = new HashMap<>();
 
-    double size = 0;
-    double ySum = 0;
-    double xSum = 0;
-    double xSqSum = 0;
-    double xySum = 0;
-    boolean finalize = false;
-    boolean whole = true;
-    double slope;
-    double inter;
-
-    public void inputXY(Date dt, double y) {
-        double x = dt.getTime();
-        this.xSum += x;
-        this.ySum += y;
-        this.xSqSum += (x * x);
-        this.xySum += (x * y);
-        this.size++;
-    }
-
-    public synchronized void fit() {
-        this.whole = (xySum % 1 == 0);
-        double bottom = (size * xSqSum) - (xSum * xSum);
-        this.inter = ((ySum * xSqSum) - (xSum * xySum)) / (bottom);
-        this.slope = ((size * xySum) - (xSum * ySum)) / (bottom);
-    }
-
-    public double predictY(double xVal) {
-        Integer count = sizeTracker.get((int) size);
-        if (count == null)
-            count = 0;
-        sizeTracker.put((int) size, count + 1);
-        if (size == 0)
-            return 0;
-        if (size < 4)
-            return ySum / size;
-        double ans = (xVal * this.slope) + this.inter;
-        // if (ans < 0)
-        //     return 0;
-        return this.whole ? (double) Math.round(ans) : ((double) Math.round(ans * 100) / 100);
-    }
-
-    @SuppressWarnings("deprecation")
-    public static void analyzeLine(String str) {
-        String[] arr = str.split(",");
-        double unit_sales = Double.parseDouble(arr[4]);
-        Date date = new Date();
-        try {
-            date = dateFormat.parse(arr[1]);
-        } catch (Exception e) {
-            return;
-        }
-        String key = "W:" + date.getDay() + "\t S: " + arr[2] + "\tI: " + arr[3];
-        getBigDataLineReg(key).inputXY(date, unit_sales);
-    }
-
-    public static synchronized BigDataLineReg getBigDataLineReg(String key) {
-        BigDataLineReg ret = regMap.get(key);
-        if (ret == null) {
-            ret = new BigDataLineReg();
-            regMap.put(key, ret);
-        }
-        return ret;
-    }
-    
     public static void main(String[] args) {
         Timer total = new Timer();
         readFile();
         calculateAllLines();
         predict();
-        Tools.listToFile(Tools.mapToPairList(sizeTracker), "SizeCount.txt");
+        // Tools.listToFile(Tools.mapToPairList(sizeTracker), "SizeCount.txt");
         total.time();
         // fileSplitterPython();
+    }
+
+    public static Regression getMethod() {
+        return new LinearReg();
     }
 
     public static void readFile() {
@@ -104,13 +44,12 @@ public class BigDataLineReg {
 
     public static void calculateAllLines() {
         ProgressBar pb = new ProgressBar(regMap.size(), "Calculate All Lines");
-        for (BigDataLineReg big : regMap.values()) {
-            big.fit();
+        for (Regression reg : regMap.values()) {
+            reg.fit();
             pb.step();
         }
     }
 
-    @SuppressWarnings("deprecation")
     public static void predict() {
         ProgressBar pb = new ProgressBar(3370464, "Prediction");
         Scanner sc = Tools.fileReader(Miner.TEST_FILE);
@@ -121,16 +60,19 @@ public class BigDataLineReg {
                 @Override
                 public void run() {
                     String[] arr = str.split(",");
-                    long x = 0;
+                    double x = 0;
                     Date date = new Date();
                     try {
                         date = dateFormat.parse(arr[1]);
-                        x = date.getTime();
+                        x = (double) date.getTime();
                     } catch (Exception e) {
                     }
-                    String key = "W:" + date.getDay() + "\t S: " + arr[2] + "\tI: " + arr[3];
-                    BigDataLineReg big = getBigDataLineReg(key);
-                    double ans = big.predictY(x);
+                    String key = generateKey(date, arr[2], arr[3]);
+                    Regression reg = getMethod();
+                    if (regMap.containsKey(key)) {
+                        reg = regMap.get(key);
+                    }
+                    double ans = reg.predictY(x);
                     ans = ans < 0 || Double.isNaN(ans) ? 0 : ans;
                     pairTracker.add(Integer.parseInt(arr[0]), ans);
                 }
@@ -138,6 +80,34 @@ public class BigDataLineReg {
             pb.step();
         }
         pairTracker.toFile("output.csv");
+    }
+
+    public static void analyzeLine(String str) {
+        String[] arr = str.split(",");
+        double unit_sales = Double.parseDouble(arr[4]);
+        Date date = new Date();
+        try {
+            date = dateFormat.parse(arr[1]);
+        } catch (Exception e) {
+            return;
+        }
+        String key = generateKey(date, arr[2], arr[3]);
+        getRegression(key).inputXY((double) date.getTime(), unit_sales);
+    }
+
+    // Change ret Item to what ever object you want
+    public static synchronized Regression getRegression(String key) {
+        Regression ret = regMap.get(key);
+        if (ret == null) {
+            ret = getMethod();
+            regMap.put(key, ret);
+        }
+        return ret;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static String generateKey(Date date, String store_nbr, String item_nbr) {
+        return "W" + date.getDay() + "S" + store_nbr + "I" + item_nbr;
     }
 
     @SuppressWarnings("deprecation")
