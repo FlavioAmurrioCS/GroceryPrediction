@@ -8,6 +8,7 @@ public class LinearReg implements Regression {
     double xSum = 0;
     double xSqSum = 0;
     double xySum = 0;
+    double lastX;
     boolean finalize = false;
     double slope;
     double inter;
@@ -18,6 +19,7 @@ public class LinearReg implements Regression {
         this.xSqSum += (x * x);
         this.xySum += (x * y);
         this.size++;
+        this.lastX = x;
     }
 
     public synchronized void fit() {
@@ -30,6 +32,8 @@ public class LinearReg implements Regression {
     public double predictY(double xVal) {
         if (finalize == false)
             this.fit();
+        if (xVal - this.lastX > (30 * 86400000))
+            return 0;
         if (size < 4)
             return ySum / size;
         return (xVal * this.slope) + this.inter;

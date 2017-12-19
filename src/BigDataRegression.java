@@ -16,6 +16,7 @@ public class BigDataRegression {
     public static HashMap<String, Regression> regMap = new HashMap<>();
     public static PairTracker<Double> pairTracker = new PairTracker<>();
     // public static HashMap<Integer, Integer> sizeTracker = new HashMap<>();
+    // id,unit_sales
 
     public static void main(String[] args) {
         Timer total = new Timer();
@@ -95,7 +96,6 @@ public class BigDataRegression {
         getRegression(key).inputXY((double) date.getTime(), unit_sales);
     }
 
-    // Change ret Item to what ever object you want
     public static synchronized Regression getRegression(String key) {
         Regression ret = regMap.get(key);
         if (ret == null) {
@@ -107,27 +107,7 @@ public class BigDataRegression {
 
     @SuppressWarnings("deprecation")
     public static String generateKey(Date date, String store_nbr, String item_nbr) {
-        return "W" + date.getDay() + "S" + store_nbr + "I" + item_nbr;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static void fileSplitterPython() {
-        ProgressBar pb = new ProgressBar(125497041, "Python File Splitting");
-        Scanner sc = Tools.fileReader(Miner.TRAIN_FILE);
-        sc.nextLine();
-        while (sc.hasNextLine()) {
-            String str = sc.nextLine();
-            String[] arr = str.split(",");
-            Date date = new Date();
-            try {
-                date = dateFormat.parse(arr[1]);
-            } catch (Exception e) {
-                return;
-            }
-            String filename = "./pfiles/" + "W" + date.getDay() + "S" + arr[2] + "I" + arr[3] + ".csv";
-            Tools.appendFile(filename, date.getTime() + "," + arr[4]);
-            pb.step();
-        }
-        sc.close();
+        // return "W" + date.getDay() + "S" + store_nbr + "I" + item_nbr;
+        return "W" + (date.getDay() == 0 || date.getDay() == 6) + "S" + store_nbr + "I" + item_nbr;
     }
 }
