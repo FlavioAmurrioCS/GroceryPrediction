@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.io.File;
 import java.util.Random;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -261,5 +262,9 @@ public class Tools {
     //     }
     //     return fMap;
     // }
+
+    public static int dayDiff(Date ori, Date dest) {
+        return (int) ((dest.getTime() - ori.getTime()) / 86400000);
+    }
 
 }
